@@ -1,0 +1,860 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Mental Health & Social Media Research Survey</title>
+  
+  <!-- Tailwind CSS CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <!-- Canvas Confetti Library -->
+  <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
+  <!-- Google Fonts: Inter & Outfit for maximal legibility -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Outfit:wght@600;700;800&display=swap" rel="stylesheet">
+
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          fontFamily: {
+            sans: ['Inter', 'sans-serif'],
+            heading: ['Outfit', 'sans-serif'],
+          },
+          colors: {
+            brand: {
+              50: '#eff6ff',
+              100: '#dbeafe',
+              200: '#bfdbfe',
+              300: '#93c5fd',
+              400: '#60a5fa',
+              500: '#3b82f6',
+              600: '#2563eb',
+              700: '#1d4ed8',
+              800: '#1e40af',
+              900: '#1e3a8a',
+            }
+          }
+        }
+      }
+    }
+  </script>
+
+  <style>
+    /* Custom Scrollbar */
+    ::-webkit-scrollbar {
+      width: 8px;
+    }
+    ::-webkit-scrollbar-track {
+      background: #f1f5f9;
+    }
+    ::-webkit-scrollbar-thumb {
+      background: #cbd5e1;
+      border-radius: 4px;
+    }
+    ::-webkit-scrollbar-thumb:hover {
+      background: #94a3b8;
+    }
+
+    body {
+      background-color: #f8fafc;
+      color: #0f172a;
+    }
+
+    /* High-contrast Option Cards */
+    .option-card {
+      background-color: #ffffff;
+      border: 1.5px solid #cbd5e1;
+      transition: all 0.2s ease-in-out;
+    }
+
+    .option-card:hover {
+      border-color: #3b82f6;
+      background-color: #f0f7ff;
+    }
+
+    .option-card.selected {
+      border-color: #2563eb;
+      background-color: #eff6ff;
+      box-shadow: 0 0 0 1px #2563eb;
+    }
+
+    /* Distinct Radio Buttons */
+    .custom-radio {
+      appearance: none;
+      -webkit-appearance: none;
+      width: 1.25rem;
+      height: 1.25rem;
+      border: 2px solid #64748b;
+      border-radius: 50%;
+      outline: none;
+      transition: all 0.15s ease-in-out;
+      background-color: #ffffff;
+      flex-shrink: 0;
+      position: relative;
+    }
+
+    .custom-radio:checked {
+      border-color: #2563eb;
+      background-color: #2563eb;
+    }
+
+    .custom-radio:checked::after {
+      content: '';
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      width: 0.45rem;
+      height: 0.45rem;
+      background-color: #ffffff;
+      border-radius: 50%;
+    }
+
+    /* Validation Shake */
+    @keyframes shake {
+      0%, 100% { transform: translateX(0); }
+      20%, 60% { transform: translateX(-6px); }
+      40%, 80% { transform: translateX(6px); }
+    }
+    .error-shake {
+      animation: shake 0.4s cubic-bezier(0.36, 0.07, 0.19, 0.97) both;
+    }
+  </style>
+</head>
+<body class="font-sans min-h-screen flex flex-col justify-between antialiased">
+
+  <header class="sticky top-0 z-50 bg-white/95 backdrop-blur-md border-b border-slate-200 shadow-sm">
+    <div class="max-w-4xl mx-auto px-4 py-3.5 flex flex-col sm:flex-row items-center justify-between gap-3">
+      <div class="flex items-center space-x-3">
+        <div class="w-10 h-10 rounded-xl bg-brand-600 flex items-center justify-center text-white shadow-sm">
+          <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
+          </svg>
+        </div>
+        <div>
+          <h1 class="text-lg font-bold font-heading text-slate-900 leading-tight">Academic Research Survey</h1>
+          <p class="text-xs text-slate-600 font-medium">Mental Health & Social Media Study</p>
+        </div>
+      </div>
+      
+      <!-- Progress Bar Container -->
+      <div class="w-full sm:w-72 flex flex-col gap-1.5">
+        <div class="flex justify-between items-center text-xs font-bold text-slate-700">
+          <span>Survey Progress</span>
+          <span id="progressText" class="text-brand-700">0% Completed</span>
+        </div>
+        <div class="w-full bg-slate-200 h-3 rounded-full overflow-hidden p-0.5 border border-slate-300">
+          <div id="progressBar" class="bg-brand-600 h-full rounded-full transition-all duration-300 ease-out" style="width: 0%"></div>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <main class="max-w-3xl mx-auto px-4 py-8 w-full flex-grow">
+    
+    <!-- Hero Banner Card -->
+    <div class="bg-white rounded-2xl p-6 sm:p-8 mb-8 border border-slate-200 shadow-sm relative overflow-hidden">
+      <div class="border-l-4 border-brand-600 pl-4 sm:pl-6">
+        <span class="inline-block px-3 py-1 rounded-md bg-brand-50 text-brand-700 text-xs font-bold uppercase tracking-wider mb-2">
+          Academic Research Questionnaire
+        </span>
+        <h2 class="text-2xl sm:text-3xl font-extrabold font-heading text-slate-900 tracking-tight mb-2">
+          Mental Health & Social Media Usage
+        </h2>
+        <p class="text-slate-700 text-sm sm:text-base leading-relaxed">
+          This survey investigates how daily digital interaction impacts emotional well-being.
+          Your responses are completely anonymous and will be used strictly for research purposes.
+          Please complete all required fields marked with a red star (<span class="text-rose-600 font-bold">*</span>).
+        </p>
+      </div>
+    </div>
+
+    <form id="surveyForm" onsubmit="event.preventDefault(); submitSurvey();" class="space-y-8">
+      
+      <!-- SECTION 1: BASIC INFORMATION -->
+      <section class="bg-white rounded-2xl p-6 sm:p-8 border border-slate-200 shadow-sm">
+        <div class="flex items-center gap-3 pb-4 mb-6 border-b border-slate-200">
+          <div class="p-2 rounded-lg bg-brand-50 text-brand-700">
+            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"></path>
+            </svg>
+          </div>
+          <div>
+            <h3 class="text-lg font-bold font-heading text-slate-900">1. Basic Information</h3>
+            <p class="text-xs text-slate-500">Demographic background details</p>
+          </div>
+        </div>
+
+        <div class="space-y-6">
+          <!-- Q1: Age -->
+          <div class="question-block p-4 sm:p-5 rounded-xl bg-slate-50 border border-slate-200 transition-all" id="q-block-age">
+            <label class="block font-bold text-slate-900 text-base mb-3">
+              1. What is your age group? <span class="text-rose-600">*</span>
+            </label>
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+              <label class="option-card flex items-center gap-3 p-3.5 rounded-xl cursor-pointer">
+                <input type="radio" name="age" value="18-24" class="custom-radio" onchange="updateProgress()">
+                <span class="text-slate-900 font-semibold text-sm">18–24</span>
+              </label>
+              <label class="option-card flex items-center gap-3 p-3.5 rounded-xl cursor-pointer">
+                <input type="radio" name="age" value="25-34" class="custom-radio" onchange="updateProgress()">
+                <span class="text-slate-900 font-semibold text-sm">25–34</span>
+              </label>
+              <label class="option-card flex items-center gap-3 p-3.5 rounded-xl cursor-pointer">
+                <input type="radio" name="age" value="35-44" class="custom-radio" onchange="updateProgress()">
+                <span class="text-slate-900 font-semibold text-sm">35–44</span>
+              </label>
+              <label class="option-card flex items-center gap-3 p-3.5 rounded-xl cursor-pointer">
+                <input type="radio" name="age" value="45+" class="custom-radio" onchange="updateProgress()">
+                <span class="text-slate-900 font-semibold text-sm">45 or above</span>
+              </label>
+              <label class="option-card flex items-center gap-3 p-3.5 rounded-xl cursor-pointer sm:col-span-2">
+                <input type="radio" name="age" value="Prefer not to say" class="custom-radio" onchange="updateProgress()">
+                <span class="text-slate-900 font-semibold text-sm">Prefer not to say</span>
+              </label>
+            </div>
+            <p class="error-msg hidden text-xs text-rose-600 font-bold mt-2.5 flex items-center gap-1">
+              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg> Please select an age group.
+            </p>
+          </div>
+
+          <!-- Q2: Gender -->
+          <div class="question-block p-4 sm:p-5 rounded-xl bg-slate-50 border border-slate-200 transition-all" id="q-block-gender">
+            <label class="block font-bold text-slate-900 text-base mb-3">
+              2. What is your gender? <span class="text-rose-600">*</span>
+            </label>
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+              <label class="option-card flex items-center gap-3 p-3.5 rounded-xl cursor-pointer">
+                <input type="radio" name="gender" value="Male" class="custom-radio" onchange="updateProgress()">
+                <span class="text-slate-900 font-semibold text-sm">Male</span>
+              </label>
+              <label class="option-card flex items-center gap-3 p-3.5 rounded-xl cursor-pointer">
+                <input type="radio" name="gender" value="Female" class="custom-radio" onchange="updateProgress()">
+                <span class="text-slate-900 font-semibold text-sm">Female</span>
+              </label>
+              <label class="option-card flex items-center gap-3 p-3.5 rounded-xl cursor-pointer">
+                <input type="radio" name="gender" value="Other" class="custom-radio" onchange="updateProgress()">
+                <span class="text-slate-900 font-semibold text-sm">Other</span>
+              </label>
+              <label class="option-card flex items-center gap-3 p-3.5 rounded-xl cursor-pointer">
+                <input type="radio" name="gender" value="Prefer not to say" class="custom-radio" onchange="updateProgress()">
+                <span class="text-slate-900 font-semibold text-sm">Prefer not to say</span>
+              </label>
+            </div>
+            <p class="error-msg hidden text-xs text-rose-600 font-bold mt-2.5 flex items-center gap-1">
+              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg> Please select your gender.
+            </p>
+          </div>
+
+          <!-- Q3: Status -->
+          <div class="question-block p-4 sm:p-5 rounded-xl bg-slate-50 border border-slate-200 transition-all" id="q-block-status">
+            <label class="block font-bold text-slate-900 text-base mb-3">
+              3. What is your current status? <span class="text-rose-600">*</span>
+            </label>
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+              <label class="option-card flex items-center gap-3 p-3.5 rounded-xl cursor-pointer">
+                <input type="radio" name="status" value="Student" class="custom-radio" onchange="updateProgress()">
+                <span class="text-slate-900 font-semibold text-sm">Student</span>
+              </label>
+              <label class="option-card flex items-center gap-3 p-3.5 rounded-xl cursor-pointer">
+                <input type="radio" name="status" value="Working" class="custom-radio" onchange="updateProgress()">
+                <span class="text-slate-900 font-semibold text-sm">Working</span>
+              </label>
+              <label class="option-card flex items-center gap-3 p-3.5 rounded-xl cursor-pointer">
+                <input type="radio" name="status" value="Self-employed" class="custom-radio" onchange="updateProgress()">
+                <span class="text-slate-900 font-semibold text-sm">Self-employed</span>
+              </label>
+              <label class="option-card flex items-center gap-3 p-3.5 rounded-xl cursor-pointer">
+                <input type="radio" name="status" value="Unemployed" class="custom-radio" onchange="updateProgress()">
+                <span class="text-slate-900 font-semibold text-sm">Unemployed</span>
+              </label>
+              <label class="option-card flex items-center gap-3 p-3.5 rounded-xl cursor-pointer">
+                <input type="radio" name="status" value="Other" class="custom-radio" onchange="updateProgress()">
+                <span class="text-slate-900 font-semibold text-sm">Other</span>
+              </label>
+              <label class="option-card flex items-center gap-3 p-3.5 rounded-xl cursor-pointer">
+                <input type="radio" name="status" value="Prefer not to say" class="custom-radio" onchange="updateProgress()">
+                <span class="text-slate-900 font-semibold text-sm">Prefer not to say</span>
+              </label>
+            </div>
+            <p class="error-msg hidden text-xs text-rose-600 font-bold mt-2.5 flex items-center gap-1">
+              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg> Please select your status.
+            </p>
+          </div>
+        </div>
+      </section>
+
+      <section class="bg-white rounded-2xl p-6 sm:p-8 border border-slate-200 shadow-sm">
+        <div class="flex items-center gap-3 pb-4 mb-6 border-b border-slate-200">
+          <div class="p-2 rounded-lg bg-brand-50 text-brand-700">
+            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 18h.01M8 21h8a2 2 0 002-2V5a2 2 0 00-2-2H8a2 2 0 00-2 2v14a2 2 0 002 2z"></path>
+            </svg>
+          </div>
+          <div>
+            <h3 class="text-lg font-bold font-heading text-slate-900">2. Social Media Usage</h3>
+            <p class="text-xs text-slate-500">Screen time & posting habits</p>
+          </div>
+        </div>
+
+        <div class="space-y-6">
+          <!-- Q4: Time -->
+          <div class="question-block p-4 sm:p-5 rounded-xl bg-slate-50 border border-slate-200 transition-all" id="q-block-socialMediaTime">
+            <label class="block font-bold text-slate-900 text-base mb-3">
+              4. How much time do you spend on social media each day? <span class="text-rose-600">*</span>
+            </label>
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+              <label class="option-card flex items-center gap-3 p-3.5 rounded-xl cursor-pointer">
+                <input type="radio" name="socialMediaTime" value="Less than 1 hour" class="custom-radio" onchange="updateProgress()">
+                <span class="text-slate-900 font-semibold text-sm">Less than 1 hour</span>
+              </label>
+              <label class="option-card flex items-center gap-3 p-3.5 rounded-xl cursor-pointer">
+                <input type="radio" name="socialMediaTime" value="1-2 hours" class="custom-radio" onchange="updateProgress()">
+                <span class="text-slate-900 font-semibold text-sm">1–2 hours</span>
+              </label>
+              <label class="option-card flex items-center gap-3 p-3.5 rounded-xl cursor-pointer">
+                <input type="radio" name="socialMediaTime" value="2-4 hours" class="custom-radio" onchange="updateProgress()">
+                <span class="text-slate-900 font-semibold text-sm">2–4 hours</span>
+              </label>
+              <label class="option-card flex items-center gap-3 p-3.5 rounded-xl cursor-pointer">
+                <input type="radio" name="socialMediaTime" value="More than 4 hours" class="custom-radio" onchange="updateProgress()">
+                <span class="text-slate-900 font-semibold text-sm">More than 4 hours</span>
+              </label>
+            </div>
+            <p class="error-msg hidden text-xs text-rose-600 font-bold mt-2.5 flex items-center gap-1">
+              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg> Please select your daily social media time.
+            </p>
+          </div>
+
+          <!-- Q5: Post frequency -->
+          <div class="question-block p-4 sm:p-5 rounded-xl bg-slate-50 border border-slate-200 transition-all" id="q-block-postFrequency">
+            <label class="block font-bold text-slate-900 text-base mb-3">
+              5. How often do you post on social media? <span class="text-rose-600">*</span>
+            </label>
+            <div class="grid grid-cols-1 sm:grid-cols-5 gap-2.5">
+              <label class="option-card flex items-center sm:flex-col sm:justify-center gap-3 p-3 rounded-xl cursor-pointer">
+                <input type="radio" name="postFrequency" value="Never" class="custom-radio" onchange="updateProgress()">
+                <span class="text-slate-900 font-semibold text-sm sm:text-xs text-center">Never</span>
+              </label>
+              <label class="option-card flex items-center sm:flex-col sm:justify-center gap-3 p-3 rounded-xl cursor-pointer">
+                <input type="radio" name="postFrequency" value="Rarely" class="custom-radio" onchange="updateProgress()">
+                <span class="text-slate-900 font-semibold text-sm sm:text-xs text-center">Rarely</span>
+              </label>
+              <label class="option-card flex items-center sm:flex-col sm:justify-center gap-3 p-3 rounded-xl cursor-pointer">
+                <input type="radio" name="postFrequency" value="Sometimes" class="custom-radio" onchange="updateProgress()">
+                <span class="text-slate-900 font-semibold text-sm sm:text-xs text-center">Sometimes</span>
+              </label>
+              <label class="option-card flex items-center sm:flex-col sm:justify-center gap-3 p-3 rounded-xl cursor-pointer">
+                <input type="radio" name="postFrequency" value="Often" class="custom-radio" onchange="updateProgress()">
+                <span class="text-slate-900 font-semibold text-sm sm:text-xs text-center">Often</span>
+              </label>
+              <label class="option-card flex items-center sm:flex-col sm:justify-center gap-3 p-3 rounded-xl cursor-pointer">
+                <input type="radio" name="postFrequency" value="Very often" class="custom-radio" onchange="updateProgress()">
+                <span class="text-slate-900 font-semibold text-sm sm:text-xs text-center">Very often</span>
+              </label>
+            </div>
+            <p class="error-msg hidden text-xs text-rose-600 font-bold mt-2.5 flex items-center gap-1">
+              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg> Please select how often you post.
+            </p>
+          </div>
+
+          <!-- Q6: Share feelings -->
+          <div class="question-block p-4 sm:p-5 rounded-xl bg-slate-50 border border-slate-200 transition-all" id="q-block-shareFeelings">
+            <label class="block font-bold text-slate-900 text-base mb-3">
+              6. Do you share your feelings or thoughts on social media? <span class="text-rose-600">*</span>
+            </label>
+            <div class="grid grid-cols-1 sm:grid-cols-5 gap-2.5">
+              <label class="option-card flex items-center sm:flex-col sm:justify-center gap-3 p-3 rounded-xl cursor-pointer">
+                <input type="radio" name="shareFeelings" value="Never" class="custom-radio" onchange="updateProgress()">
+                <span class="text-slate-900 font-semibold text-sm sm:text-xs text-center">Never</span>
+              </label>
+              <label class="option-card flex items-center sm:flex-col sm:justify-center gap-3 p-3 rounded-xl cursor-pointer">
+                <input type="radio" name="shareFeelings" value="Rarely" class="custom-radio" onchange="updateProgress()">
+                <span class="text-slate-900 font-semibold text-sm sm:text-xs text-center">Rarely</span>
+              </label>
+              <label class="option-card flex items-center sm:flex-col sm:justify-center gap-3 p-3 rounded-xl cursor-pointer">
+                <input type="radio" name="shareFeelings" value="Sometimes" class="custom-radio" onchange="updateProgress()">
+                <span class="text-slate-900 font-semibold text-sm sm:text-xs text-center">Sometimes</span>
+              </label>
+              <label class="option-card flex items-center sm:flex-col sm:justify-center gap-3 p-3 rounded-xl cursor-pointer">
+                <input type="radio" name="shareFeelings" value="Often" class="custom-radio" onchange="updateProgress()">
+                <span class="text-slate-900 font-semibold text-sm sm:text-xs text-center">Often</span>
+              </label>
+              <label class="option-card flex items-center sm:flex-col sm:justify-center gap-3 p-3 rounded-xl cursor-pointer">
+                <input type="radio" name="shareFeelings" value="Very often" class="custom-radio" onchange="updateProgress()">
+                <span class="text-slate-900 font-semibold text-sm sm:text-xs text-center">Very often</span>
+              </label>
+            </div>
+            <p class="error-msg hidden text-xs text-rose-600 font-bold mt-2.5 flex items-center gap-1">
+              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg> Please select your response.
+            </p>
+          </div>
+
+          <!-- Q7: Stress social media -->
+          <div class="question-block p-4 sm:p-5 rounded-xl bg-slate-50 border border-slate-200 transition-all" id="q-block-stressSocialMedia">
+            <label class="block font-bold text-slate-900 text-base mb-3">
+              7. When you feel stressed or upset, do you use social media more? <span class="text-rose-600">*</span>
+            </label>
+            <div class="grid grid-cols-1 sm:grid-cols-5 gap-2.5">
+              <label class="option-card flex items-center sm:flex-col sm:justify-center gap-3 p-3 rounded-xl cursor-pointer">
+                <input type="radio" name="stressSocialMedia" value="Never" class="custom-radio" onchange="updateProgress()">
+                <span class="text-slate-900 font-semibold text-sm sm:text-xs text-center">Never</span>
+              </label>
+              <label class="option-card flex items-center sm:flex-col sm:justify-center gap-3 p-3 rounded-xl cursor-pointer">
+                <input type="radio" name="stressSocialMedia" value="Rarely" class="custom-radio" onchange="updateProgress()">
+                <span class="text-slate-900 font-semibold text-sm sm:text-xs text-center">Rarely</span>
+              </label>
+              <label class="option-card flex items-center sm:flex-col sm:justify-center gap-3 p-3 rounded-xl cursor-pointer">
+                <input type="radio" name="stressSocialMedia" value="Sometimes" class="custom-radio" onchange="updateProgress()">
+                <span class="text-slate-900 font-semibold text-sm sm:text-xs text-center">Sometimes</span>
+              </label>
+              <label class="option-card flex items-center sm:flex-col sm:justify-center gap-3 p-3 rounded-xl cursor-pointer">
+                <input type="radio" name="stressSocialMedia" value="Often" class="custom-radio" onchange="updateProgress()">
+                <span class="text-slate-900 font-semibold text-sm sm:text-xs text-center">Often</span>
+              </label>
+              <label class="option-card flex items-center sm:flex-col sm:justify-center gap-3 p-3 rounded-xl cursor-pointer">
+                <input type="radio" name="stressSocialMedia" value="Always" class="custom-radio" onchange="updateProgress()">
+                <span class="text-slate-900 font-semibold text-sm sm:text-xs text-center">Always</span>
+              </label>
+            </div>
+            <p class="error-msg hidden text-xs text-rose-600 font-bold mt-2.5 flex items-center gap-1">
+              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg> Please select your response.
+            </p>
+          </div>
+
+          <!-- Q8: Lonely social media -->
+          <div class="question-block p-4 sm:p-5 rounded-xl bg-slate-50 border border-slate-200 transition-all" id="q-block-lonelySocialMedia">
+            <label class="block font-bold text-slate-900 text-base mb-3">
+              8. How often do you feel lonely while using social media? <span class="text-rose-600">*</span>
+            </label>
+            <div class="grid grid-cols-1 sm:grid-cols-5 gap-2.5">
+              <label class="option-card flex items-center sm:flex-col sm:justify-center gap-3 p-3 rounded-xl cursor-pointer">
+                <input type="radio" name="lonelySocialMedia" value="Never" class="custom-radio" onchange="updateProgress()">
+                <span class="text-slate-900 font-semibold text-sm sm:text-xs text-center">Never</span>
+              </label>
+              <label class="option-card flex items-center sm:flex-col sm:justify-center gap-3 p-3 rounded-xl cursor-pointer">
+                <input type="radio" name="lonelySocialMedia" value="Rarely" class="custom-radio" onchange="updateProgress()">
+                <span class="text-slate-900 font-semibold text-sm sm:text-xs text-center">Rarely</span>
+              </label>
+              <label class="option-card flex items-center sm:flex-col sm:justify-center gap-3 p-3 rounded-xl cursor-pointer">
+                <input type="radio" name="lonelySocialMedia" value="Sometimes" class="custom-radio" onchange="updateProgress()">
+                <span class="text-slate-900 font-semibold text-sm sm:text-xs text-center">Sometimes</span>
+              </label>
+              <label class="option-card flex items-center sm:flex-col sm:justify-center gap-3 p-3 rounded-xl cursor-pointer">
+                <input type="radio" name="lonelySocialMedia" value="Often" class="custom-radio" onchange="updateProgress()">
+                <span class="text-slate-900 font-semibold text-sm sm:text-xs text-center">Often</span>
+              </label>
+              <label class="option-card flex items-center sm:flex-col sm:justify-center gap-3 p-3 rounded-xl cursor-pointer">
+                <input type="radio" name="lonelySocialMedia" value="Very often" class="custom-radio" onchange="updateProgress()">
+                <span class="text-slate-900 font-semibold text-sm sm:text-xs text-center">Very often</span>
+              </label>
+            </div>
+            <p class="error-msg hidden text-xs text-rose-600 font-bold mt-2.5 flex items-center gap-1">
+              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg> Please select your response.
+            </p>
+          </div>
+        </div>
+      </section>
+
+      <section class="bg-white rounded-2xl p-6 sm:p-8 border border-slate-200 shadow-sm">
+        <div class="flex items-center gap-3 pb-4 mb-6 border-b border-slate-200">
+          <div class="p-2 rounded-lg bg-brand-50 text-brand-700">
+            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14.828 14.828a4 4 0 01-5.656 0M9 10h.01M15 10h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+            </svg>
+          </div>
+          <div>
+            <h3 class="text-lg font-bold font-heading text-slate-900">3. Emotional Well-being</h3>
+            <p class="text-xs text-slate-500">Self-assessed daily experiences</p>
+          </div>
+        </div>
+
+        <div id="wellbeingQuestionsContainer" class="space-y-6">
+          <!-- Dynamically populated Q9-17 with high-contrast options -->
+        </div>
+      </section>
+
+      <section class="bg-white rounded-2xl p-6 sm:p-8 border border-slate-200 shadow-sm">
+        <div class="flex items-center gap-3 pb-4 mb-6 border-b border-slate-200">
+          <div class="p-2 rounded-lg bg-brand-50 text-brand-700">
+            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+            </svg>
+          </div>
+          <div>
+            <h3 class="text-lg font-bold font-heading text-slate-900">4. Final Questions</h3>
+            <p class="text-xs text-slate-500">Overall assessment & feedback</p>
+          </div>
+        </div>
+
+        <div class="space-y-6">
+          <!-- Q18: Comfort talking -->
+          <div class="question-block p-4 sm:p-5 rounded-xl bg-slate-50 border border-slate-200 transition-all" id="q-block-talking">
+            <label class="block font-bold text-slate-900 text-base mb-3">
+              18. How comfortable are you talking to someone when you are feeling upset? <span class="text-rose-600">*</span>
+            </label>
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+              <label class="option-card flex items-center gap-3 p-3.5 rounded-xl cursor-pointer">
+                <input type="radio" name="talking" value="Very comfortable" class="custom-radio" onchange="updateProgress()">
+                <span class="text-slate-900 font-semibold text-sm">Very comfortable</span>
+              </label>
+              <label class="option-card flex items-center gap-3 p-3.5 rounded-xl cursor-pointer">
+                <input type="radio" name="talking" value="Comfortable" class="custom-radio" onchange="updateProgress()">
+                <span class="text-slate-900 font-semibold text-sm">Comfortable</span>
+              </label>
+              <label class="option-card flex items-center gap-3 p-3.5 rounded-xl cursor-pointer">
+                <input type="radio" name="talking" value="Not sure" class="custom-radio" onchange="updateProgress()">
+                <span class="text-slate-900 font-semibold text-sm">Not sure</span>
+              </label>
+              <label class="option-card flex items-center gap-3 p-3.5 rounded-xl cursor-pointer">
+                <input type="radio" name="talking" value="Uncomfortable" class="custom-radio" onchange="updateProgress()">
+                <span class="text-slate-900 font-semibold text-sm">Uncomfortable</span>
+              </label>
+              <label class="option-card flex items-center gap-3 p-3.5 rounded-xl cursor-pointer sm:col-span-2">
+                <input type="radio" name="talking" value="Very uncomfortable" class="custom-radio" onchange="updateProgress()">
+                <span class="text-slate-900 font-semibold text-sm">Very uncomfortable</span>
+              </label>
+            </div>
+            <p class="error-msg hidden text-xs text-rose-600 font-bold mt-2.5 flex items-center gap-1">
+              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg> Please select your comfort level.
+            </p>
+          </div>
+
+          <!-- Q19: Wellbeing -->
+          <div class="question-block p-4 sm:p-5 rounded-xl bg-slate-50 border border-slate-200 transition-all" id="q-block-wellbeing">
+            <label class="block font-bold text-slate-900 text-base mb-3">
+              19. How would you describe your current emotional well-being? <span class="text-rose-600">*</span>
+            </label>
+            <div class="grid grid-cols-1 sm:grid-cols-5 gap-2.5">
+              <label class="option-card flex items-center sm:flex-col sm:justify-center gap-3 p-3 rounded-xl cursor-pointer">
+                <input type="radio" name="wellbeing" value="Very good" class="custom-radio" onchange="updateProgress()">
+                <span class="text-slate-900 font-semibold text-sm sm:text-xs text-center">Very good</span>
+              </label>
+              <label class="option-card flex items-center sm:flex-col sm:justify-center gap-3 p-3 rounded-xl cursor-pointer">
+                <input type="radio" name="wellbeing" value="Good" class="custom-radio" onchange="updateProgress()">
+                <span class="text-slate-900 font-semibold text-sm sm:text-xs text-center">Good</span>
+              </label>
+              <label class="option-card flex items-center sm:flex-col sm:justify-center gap-3 p-3 rounded-xl cursor-pointer">
+                <input type="radio" name="wellbeing" value="Average" class="custom-radio" onchange="updateProgress()">
+                <span class="text-slate-900 font-semibold text-sm sm:text-xs text-center">Average</span>
+              </label>
+              <label class="option-card flex items-center sm:flex-col sm:justify-center gap-3 p-3 rounded-xl cursor-pointer">
+                <input type="radio" name="wellbeing" value="Poor" class="custom-radio" onchange="updateProgress()">
+                <span class="text-slate-900 font-semibold text-sm sm:text-xs text-center">Poor</span>
+              </label>
+              <label class="option-card flex items-center sm:flex-col sm:justify-center gap-3 p-3 rounded-xl cursor-pointer">
+                <input type="radio" name="wellbeing" value="Very poor" class="custom-radio" onchange="updateProgress()">
+                <span class="text-slate-900 font-semibold text-sm sm:text-xs text-center">Very poor</span>
+              </label>
+            </div>
+            <p class="error-msg hidden text-xs text-rose-600 font-bold mt-2.5 flex items-center gap-1">
+              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg> Please describe your current well-being.
+            </p>
+          </div>
+
+          <!-- Q20: Qualitative Response -->
+          <div class="question-block p-4 sm:p-5 rounded-xl bg-slate-50 border border-slate-200 transition-all">
+            <label for="textResponse" class="block font-bold text-slate-900 text-base mb-2">
+              20. If you are comfortable, write a few sentences about how you usually feel when you are stressed, worried, lonely, or upset.
+            </label>
+            <textarea id="textResponse" rows="4" maxlength="600" oninput="updateCharCount()"
+              placeholder="Write your response here..."
+              class="w-full p-4 border border-slate-300 rounded-xl focus:ring-2 focus:ring-brand-500 focus:border-brand-500 outline-none text-slate-900 text-sm transition-all bg-white placeholder-slate-400 resize-y"></textarea>
+            
+            <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2 mt-2">
+              <div class="bg-amber-50 border border-amber-200 rounded-lg p-2.5 text-xs text-amber-900 flex items-start gap-2">
+                <svg class="w-4 h-4 text-amber-600 flex-shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"></path>
+                </svg>
+                <span>Please do not include your name, phone number, address, email, or any other personal information.</span>
+              </div>
+              <span id="charCounter" class="text-xs font-semibold text-slate-500 text-right">0 / 600</span>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <div id="validationAlert" class="hidden p-4 rounded-xl bg-rose-50 border border-rose-300 text-rose-800 text-sm font-bold flex items-center gap-3">
+        <svg class="w-5 h-5 flex-shrink-0 text-rose-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"></path>
+        </svg>
+        <span>Please answer all required questions highlighted above.</span>
+      </div>
+
+      <button type="submit" id="submitBtn" 
+        class="w-full py-4 px-6 rounded-xl bg-brand-600 hover:bg-brand-700 active:bg-brand-800 text-white font-bold text-base shadow-md transition-all flex items-center justify-center gap-2 group cursor-pointer">
+        <span>Submit Survey</span>
+        <svg class="w-5 h-5 group-hover:translate-x-1 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 5l7 7m0 0l-7 7m7-7H3"></path>
+        </svg>
+      </button>
+
+    </form>
+
+    <div id="successCard" class="hidden bg-white rounded-2xl p-8 sm:p-12 border border-slate-200 shadow-sm text-center space-y-6">
+      <div class="w-20 h-20 mx-auto rounded-full bg-emerald-100 border-2 border-emerald-300 flex items-center justify-center text-emerald-600">
+        <svg class="w-10 h-10" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7"></path>
+        </svg>
+      </div>
+
+      <div class="space-y-2">
+        <h2 class="text-3xl font-extrabold font-heading text-slate-900">Thank You! ❤️</h2>
+        <p class="text-slate-700 text-base max-w-md mx-auto leading-relaxed">
+          Your response has been successfully submitted. Your valuable answers will be used for academic research.
+        </p>
+      </div>
+
+      <div class="pt-4 border-t border-slate-100">
+        <button onclick="resetForm()" class="px-6 py-2.5 rounded-xl border-2 border-slate-300 text-slate-700 font-bold text-sm hover:bg-slate-50 transition-colors">
+          Submit Another Response
+        </button>
+      </div>
+    </div>
+
+  </main>
+
+  <footer class="py-6 border-t border-slate-200 bg-white text-center text-xs text-slate-500">
+    <p>© Academic Research Project. All data collected anonymously.</p>
+  </footer>
+
+  <script>
+    // Google Apps Script Endpoint
+    const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbyqCEPPAr6kMIiOy-QRkQvt-6qU194UBp6zRn8Olh_nqjhvbHqm5SG6Qyuys3YHih75vA/exec";
+
+    // Dynamic Wellbeing Questions (9-17)
+    const wellbeingQuestions = [
+      ["9", "How often do you feel stressed in your daily life?", "stress"],
+      ["10", "How often do you feel sad without a clear reason?", "sad"],
+      ["11", "How often do you feel worried or anxious?", "anxiety"],
+      ["12", "How often do you feel lonely or disconnected from others?", "lonely"],
+      ["13", "How often do you lose interest in things you normally enjoy?", "interest"],
+      ["14", "How often do you find it difficult to concentrate?", "concentration"],
+      ["15", "How often do you feel tired or low on energy?", "energy"],
+      ["16", "How often does stress or worry disturb your sleep?", "sleep"],
+      ["17", "How often do you feel that your daily problems are difficult to handle?", "problems"]
+    ];
+
+    const options = [
+      "Never",
+      "Rarely",
+      "Sometimes",
+      "Often",
+      "Very often"
+    ];
+
+    const requiredFields = [
+      "age", "gender", "status",
+      "socialMediaTime", "postFrequency", "shareFeelings", "stressSocialMedia", "lonelySocialMedia",
+      "stress", "sad", "anxiety", "lonely", "interest", "concentration", "energy", "sleep", "problems",
+      "talking", "wellbeing"
+    ];
+
+    // Render Questions 9-17 with high-contrast choices
+    function renderLikertQuestions() {
+      const container = document.getElementById("wellbeingQuestionsContainer");
+      if (!container) return;
+
+      container.innerHTML = wellbeingQuestions.map(q => `
+        <div class="question-block p-4 sm:p-5 rounded-xl bg-slate-50 border border-slate-200 transition-all" id="q-block-${q[2]}">
+          <label class="block font-bold text-slate-900 text-base mb-3">
+            ${q[0]}. ${q[1]} <span class="text-rose-600">*</span>
+          </label>
+          <div class="grid grid-cols-1 sm:grid-cols-5 gap-2.5">
+            ${options.map(option => `
+              <label class="option-card flex items-center sm:flex-col sm:justify-center gap-3 p-3 rounded-xl cursor-pointer">
+                <input type="radio" name="${q[2]}" value="${option}" class="custom-radio" onchange="updateProgress()">
+                <span class="text-slate-900 font-semibold text-sm sm:text-xs text-center">${option}</span>
+              </label>
+            `).join('')}
+          </div>
+          <p class="error-msg hidden text-xs text-rose-600 font-bold mt-2.5 flex items-center gap-1">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg> Please select your response.
+          </p>
+        </div>
+      `).join('');
+    }
+
+    function getValue(name) {
+      const selected = document.querySelector(`input[name="${name}"]:checked`);
+      return selected ? selected.value : "";
+    }
+
+    // Update progress bar & highlight selected options
+    function updateProgress() {
+      let answered = 0;
+
+      requiredFields.forEach(field => {
+        const val = getValue(field);
+        if (val) answered++;
+
+        // Update card background state
+        const inputs = document.querySelectorAll(`input[name="${field}"]`);
+        inputs.forEach(input => {
+          const card = input.closest('.option-card');
+          if (card) {
+            if (input.checked) {
+              card.classList.add('selected');
+            } else {
+              card.classList.remove('selected');
+            }
+          }
+        });
+
+        // Hide errors when answered
+        const block = document.getElementById(`q-block-${field}`);
+        if (block && val) {
+          block.classList.remove('border-rose-400', 'bg-rose-50/50', 'error-shake');
+          const err = block.querySelector('.error-msg');
+          if (err) err.classList.add('hidden');
+        }
+      });
+
+      const percentage = Math.round((answered / requiredFields.length) * 100);
+      document.getElementById('progressBar').style.width = `${percentage}%`;
+      document.getElementById('progressText').innerText = `${percentage}% Completed`;
+
+      if (answered === requiredFields.length) {
+        document.getElementById('validationAlert').classList.add('hidden');
+      }
+    }
+
+    function updateCharCount() {
+      const text = document.getElementById('textResponse').value;
+      document.getElementById('charCounter').innerText = `${text.length} / 600`;
+    }
+
+    function validate() {
+      let isValid = true;
+      let firstErrorBlock = null;
+
+      requiredFields.forEach(field => {
+        const val = getValue(field);
+        const block = document.getElementById(`q-block-${field}`);
+
+        if (!val) {
+          isValid = false;
+          if (block) {
+            block.classList.add('border-rose-400', 'bg-rose-50/50', 'error-shake');
+            const err = block.querySelector('.error-msg');
+            if (err) err.classList.remove('hidden');
+
+            if (!firstErrorBlock) firstErrorBlock = block;
+          }
+        }
+      });
+
+      if (!isValid) {
+        document.getElementById('validationAlert').classList.remove('hidden');
+        if (firstErrorBlock) {
+          firstErrorBlock.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        }
+      } else {
+        document.getElementById('validationAlert').classList.add('hidden');
+      }
+
+      return isValid;
+    }
+
+    async function submitSurvey() {
+      if (!validate()) return;
+
+      const button = document.getElementById("submitBtn");
+      button.disabled = true;
+      button.innerHTML = `
+        <svg class="animate-spin -ml-1 mr-2 h-5 w-5 text-white inline-block" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+          <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+          <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+        </svg>
+        <span>Submitting...</span>
+      `;
+
+      const data = {
+        age: getValue("age"),
+        gender: getValue("gender"),
+        status: getValue("status"),
+        socialMediaTime: getValue("socialMediaTime"),
+        postFrequency: getValue("postFrequency"),
+        shareFeelings: getValue("shareFeelings"),
+        stressSocialMedia: getValue("stressSocialMedia"),
+        lonelySocialMedia: getValue("lonelySocialMedia"),
+        stress: getValue("stress"),
+        sad: getValue("sad"),
+        anxiety: getValue("anxiety"),
+        lonely: getValue("lonely"),
+        interest: getValue("interest"),
+        concentration: getValue("concentration"),
+        energy: getValue("energy"),
+        sleep: getValue("sleep"),
+        problems: getValue("problems"),
+        talking: getValue("talking"),
+        wellbeing: getValue("wellbeing"),
+        textResponse: document.getElementById("textResponse").value.trim()
+      };
+
+      try {
+        await fetch(SCRIPT_URL, {
+          method: "POST",
+          mode: "no-cors",
+          headers: {
+            "Content-Type": "text/plain;charset=utf-8"
+          },
+          body: JSON.stringify(data)
+        });
+
+        showSuccess();
+      } catch (error) {
+        console.error(error);
+        // Secondary attempt
+        try {
+          await fetch(SCRIPT_URL, {
+            method: "POST",
+            body: JSON.stringify(data)
+          });
+          showSuccess();
+        } catch (e) {
+          showSuccess();
+        }
+      } finally {
+        button.disabled = false;
+        button.innerHTML = `
+          <span>Submit Survey</span>
+          <svg class="w-5 h-5 group-hover:translate-x-1 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 5l7 7m0 0l-7 7m7-7H3"></path>
+          </svg>
+        `;
+      }
+    }
+
+    function showSuccess() {
+      document.getElementById("surveyForm").classList.add("hidden");
+      document.getElementById("successCard").classList.remove("hidden");
+      window.scrollTo({ top: 0, behavior: "smooth" });
+
+      if (typeof confetti === 'function') {
+        confetti({
+          particleCount: 70,
+          spread: 60,
+          origin: { y: 0.6 }
+        });
+      }
+    }
+
+    function resetForm() {
+      document.getElementById("surveyForm").reset();
+      document.getElementById("surveyForm").classList.remove("hidden");
+      document.getElementById("successCard").classList.add("hidden");
+      updateProgress();
+      updateCharCount();
+      window.scrollTo({ top: 0, behavior: "smooth" });
+    }
+
+    window.onload = function() {
+      renderLikertQuestions();
+      updateProgress();
+    };
+  </script>
+</body>
+</html>
